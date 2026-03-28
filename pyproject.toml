@@ -17,6 +17,10 @@ dependencies = [
 [tool.poetry]
 packages = [{include = "artemis_cam", from = "src"}]
 
+[project.optional-dependencies]
+gstreamer = [
+    "PyGObject (>=3.48.0)"
+]
 [[tool.poetry.source]]
 name = "tuna"
 url = "https://pypi.tuna.tsinghua.edu.cn/simple"
