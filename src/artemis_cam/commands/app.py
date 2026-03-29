@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import sys
 from typing import Optional
 
 import typer
@@ -118,4 +119,6 @@ def serve_grpc(
 
 
 if __name__ == "__main__":
+    if len(sys.argv) == 1:
+        sys.argv.append("serve-grpc")
     app()
