@@ -29,26 +29,21 @@ message IceCandidate {
 }
 
 message ExchangeOfferRequest {
-  string peer_id = 1;
-  SessionDescription offer = 2;
+  SessionDescription offer = 1;
 }
 
 message ExchangeOfferResponse {
-  string session_id = 1;
-  SessionDescription answer = 2;
+  SessionDescription answer = 1;
 }
 
 message SendIceCandidateRequest {
-  string session_id = 1;
   oneof event {
-    IceCandidate candidate = 2;
-    bool end_of_candidates = 3;
+    IceCandidate candidate = 1;
+    bool end_of_candidates = 2;
   }
 }
 
-message CloseSessionRequest {
-  string session_id = 1;
-}
+message CloseSessionRequest {}
 
 message SignalAck {
   bool ok = 1;
