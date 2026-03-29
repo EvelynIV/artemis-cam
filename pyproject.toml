@@ -11,13 +11,16 @@ dependencies = [
     "numpy (<2.3)",
     "aiortc (>=1.14.0,<2.0.0)",
     "grpcio (>=1.78.0,<2.0.0)",
-    "protobuf (>=7.34.1,<8.0.0)"
+    "protobuf (>=6.31.1,<7.0.0)"
 ]
 
 [tool.poetry]
 packages = [{include = "artemis_cam", from = "src"}]
 
 [project.optional-dependencies]
+codegen = [
+    "grpcio-tools (>=1.78.0,<2.0.0)"
+]
 gstreamer = [
     "PyGObject (>=3.48.0)"
 ]
