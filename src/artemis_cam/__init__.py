@@ -1,27 +1,27 @@
 from .capure import (
     CaptureState,
+    EncodedStreamSink,
     EncodedVideoChunk,
     GStreamerCapture,
     RawVideoFrame,
-    WebRTCEncodedStreamSink,
 )
 from .webrtc import (
     EncodedVideoRelay,
-    H264EncodedStreamTrack,
+    H264Track,
     SignalingDescription,
-    WebRTCCameraBroadcaster,
-    WebRTCPeerSession,
+    WebRTCSession,
+    WebRTCSessionManager,
 )
 
 __all__ = [
     "CaptureState",
+    "EncodedStreamSink",
     "EncodedVideoChunk",
     "GStreamerCapture",
     "RawVideoFrame",
-    "WebRTCEncodedStreamSink",
     "EncodedVideoRelay",
-    "H264EncodedStreamTrack",
+    "H264Track",
     "SignalingDescription",
-    "WebRTCCameraBroadcaster",
-    "WebRTCPeerSession",
+    "WebRTCSession",
+    "WebRTCSessionManager",
 ]

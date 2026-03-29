@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package artemis_cam.signaling.v1;
+
+service SignalingService {
+  rpc ExchangeOffer(ExchangeOfferRequest) returns (ExchangeOfferResponse);
+  rpc SendIceCandidate(SendIceCandidateRequest) returns (SignalAck);
+  rpc CloseSession(CloseSessionRequest) returns (SignalAck);
+}
+
+message SessionDescription {
+  string type = 1;
+  string sdp = 2;
+}
+
+message IceCandidate {
+  string foundation = 1;
+  uint32 component = 2;
+  string protocol = 3;
+  uint64 priority = 4;
+  string ip = 5;
+  uint32 port = 6;
+  string type = 7;
+  string related_address = 8;
+  uint32 related_port = 9;
+  string sdp_mid = 10;
+  uint32 sdp_mline_index = 11;
+  string tcp_type = 12;
+}
+
+message ExchangeOfferRequest {
+  string peer_id = 1;
+  SessionDescription offer = 2;
+}
+
+message ExchangeOfferResponse {
+  string session_id = 1;
+  SessionDescription answer = 2;
+}
+
+message SendIceCandidateRequest {
+  string session_id = 1;
+  oneof event {
+    IceCandidate candidate = 2;
+    bool end_of_candidates = 3;
+  }
+}
+
+message CloseSessionRequest {
+  string session_id = 1;
+}
+
+message SignalAck {
+  bool ok = 1;
+}

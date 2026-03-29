@@ -68,8 +68,8 @@ class EncodedVideoChunk:
     is_keyframe: bool
 
 
-class WebRTCEncodedStreamSink(Protocol):
-    """Upper-layer sink contract for the future WebRTC module."""
+class EncodedStreamSink(Protocol):
+    """Upper-layer sink contract for encoded H.264 output."""
 
     def push_h264_chunk(self, chunk: EncodedVideoChunk) -> None:
         ...
@@ -121,8 +121,6 @@ class GStreamerCapture:
         self._gst = None
         self._pipeline = None
         self._bus = None
-        self._raw_sink = None
-        self._encoded_sink = None
         self._tee_src_pads: list[Any] = []
         self._bus_thread: threading.Thread | None = None
         self._stop_event = threading.Event()
@@ -147,9 +145,9 @@ class GStreamerCapture:
     def is_running(self) -> bool:
         return self.state is CaptureState.RUNNING
 
-    def set_webrtc_output(
+    def set_encoded_output(
         self,
-        sink: WebRTCEncodedStreamSink | EncodedChunkConsumer | None,
+        sink: EncodedStreamSink | EncodedChunkConsumer | None,
     ) -> None:
         if sink is None:
             self._encoded_consumer = None
@@ -163,7 +161,7 @@ class GStreamerCapture:
             self._encoded_consumer = sink.push_h264_chunk
             return
 
-        raise TypeError("WebRTC sink must be callable or implement push_h264_chunk().")
+        raise TypeError("Encoded sink must be callable or implement push_h264_chunk().")
 
     def start(self) -> None:
         with self._state_lock:
@@ -310,9 +308,6 @@ class GStreamerCapture:
 
         self._pipeline = pipeline
         self._bus = pipeline.get_bus()
-        self._raw_sink = raw_sink
-        self._encoded_sink = encoded_sink
-
     def _teardown_pipeline(self) -> None:
         pipeline = self._pipeline
         bus_thread = self._bus_thread
@@ -327,8 +322,6 @@ class GStreamerCapture:
         self._tee_src_pads = []
         self._pipeline = None
         self._bus = None
-        self._raw_sink = None
-        self._encoded_sink = None
 
         if bus_thread is not None and bus_thread.is_alive():
             bus_thread.join(timeout=1.0)
