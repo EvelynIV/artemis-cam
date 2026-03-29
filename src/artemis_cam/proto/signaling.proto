@@ -3,9 +3,7 @@ syntax = "proto3";
 package artemis_cam.signaling.v1;
 
 service SignalingService {
-  rpc ExchangeOffer(ExchangeOfferRequest) returns (ExchangeOfferResponse);
-  rpc SendIceCandidate(SendIceCandidateRequest) returns (SignalAck);
-  rpc CloseSession(CloseSessionRequest) returns (SignalAck);
+  rpc Signal(stream SignalMessage) returns (stream SignalMessage);
 }
 
 message SessionDescription {
@@ -28,23 +26,14 @@ message IceCandidate {
   string tcp_type = 12;
 }
 
-message ExchangeOfferRequest {
-  SessionDescription offer = 1;
-}
-
-message ExchangeOfferResponse {
-  SessionDescription answer = 1;
-}
-
-message SendIceCandidateRequest {
-  oneof event {
-    IceCandidate candidate = 1;
-    bool end_of_candidates = 2;
+message SignalMessage {
+  oneof payload {
+    SessionDescription offer = 1;
+    SessionDescription answer = 2;
+    IceCandidate candidate = 3;
+    bool end_of_candidates = 4;
+    CloseSessionRequest close = 5;
   }
 }
 
 message CloseSessionRequest {}
-
-message SignalAck {
-  bool ok = 1;
-}

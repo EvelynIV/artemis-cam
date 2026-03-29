@@ -3,9 +3,8 @@ from __future__ import annotations
 import asyncio
 import fractions
 import threading
-import uuid
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any
 
 from .capure import EncodedStreamSink, EncodedVideoChunk, GStreamerCapture
 
@@ -41,7 +40,6 @@ except Exception as exc:  # pragma: no cover - depends on local native runtime
 
         def __init__(self) -> None:
             self.readyState = "live"
-            self.id = str(uuid.uuid4())
 
         def stop(self) -> None:
             self.readyState = "ended"
@@ -147,11 +145,11 @@ class H264Track(MediaStreamTrack):
             self.stop()
             raise MediaStreamError
 
-        chunk = item
-        packet = Packet(chunk.data)
-        pts_ns = self._resolve_pts(chunk)
+        assert isinstance(item, EncodedVideoChunk)
+        packet = Packet(item.data)
+        pts_ns = self._resolve_pts(item)
         packet.pts = pts_ns
-        packet.dts = chunk.dts_ns if chunk.dts_ns is not None else pts_ns
+        packet.dts = item.dts_ns if item.dts_ns is not None else pts_ns
         packet.time_base = self._time_base
         return packet
 
@@ -175,33 +173,33 @@ class H264Track(MediaStreamTrack):
         return pts_ns
 
 
-class WebRTCSession:
+class WebRTCSignalingSession:
     def __init__(
         self,
-        relay: EncodedVideoRelay,
+        capture: GStreamerCapture,
         *,
         rtc_configuration: RTCConfiguration | None = None,
         framerate: int = 30,
-        on_close: Callable[[str], None] | None = None,
+        auto_start_capture: bool = True,
     ) -> None:
         _ensure_webrtc_runtime()
-        self.id = str(uuid.uuid4())
+        self.capture = capture
+        self.auto_start_capture = auto_start_capture
         self._closed = False
-        self._on_close = on_close
+        self._relay = EncodedVideoRelay()
+        self.capture.set_encoded_output(self._relay)
         self._pc = RTCPeerConnection(configuration=rtc_configuration)
-        self._track = H264Track(relay, framerate)
+        self._track = H264Track(self._relay, framerate)
         self._pc.addTrack(self._track)
         self._prefer_h264()
-
-        @self._pc.on("connectionstatechange")
-        async def _on_connectionstatechange() -> None:
-            if self._pc.connectionState in {"failed", "closed"}:
-                await self.close()
 
     async def answer_offer(
         self,
         offer: RTCSessionDescription | SignalingDescription | dict[str, str],
     ) -> SignalingDescription:
+        if self.auto_start_capture and not self.capture.is_running:
+            self.capture.start()
+
         await self._pc.setRemoteDescription(self._coerce_description(offer))
         answer = await self._pc.createAnswer()
         await self._pc.setLocalDescription(answer)
@@ -227,8 +225,7 @@ class WebRTCSession:
         self._closed = True
         self._track.stop()
         await self._pc.close()
-        if self._on_close is not None:
-            self._on_close(self.id)
+        self._relay.close()
 
     def _coerce_description(
         self,
@@ -255,64 +252,3 @@ class WebRTCSession:
                 return
 
         raise RuntimeError("Failed to find the H.264 video transceiver.")
-
-
-class WebRTCSessionManager:
-    def __init__(
-        self,
-        capture: GStreamerCapture,
-        *,
-        rtc_configuration: RTCConfiguration | None = None,
-        framerate: int = 30,
-        auto_start_capture: bool = True,
-    ) -> None:
-        self.capture = capture
-        self.rtc_configuration = rtc_configuration
-        self.framerate = framerate
-        self.auto_start_capture = auto_start_capture
-        self._relay = EncodedVideoRelay()
-        self._sessions: dict[str, WebRTCSession] = {}
-        self.capture.set_encoded_output(self._relay)
-
-    async def answer_offer(
-        self,
-        offer: RTCSessionDescription | SignalingDescription | dict[str, str],
-    ) -> tuple[str, SignalingDescription]:
-        if self.auto_start_capture and not self.capture.is_running:
-            self.capture.start()
-
-        session = WebRTCSession(
-            self._relay,
-            rtc_configuration=self.rtc_configuration,
-            framerate=self.framerate,
-            on_close=lambda session_id: self._sessions.pop(session_id, None),
-        )
-        self._sessions[session.id] = session
-        try:
-            answer = await session.answer_offer(offer)
-        except Exception:
-            self._sessions.pop(session.id, None)
-            await session.close()
-            raise
-        return session.id, answer
-
-    async def add_ice_candidate(
-        self,
-        session_id: str,
-        candidate: RTCIceCandidate | dict[str, Any] | None,
-    ) -> None:
-        session = self._sessions.get(session_id)
-        if session is None:
-            raise KeyError(f"Unknown WebRTC session: {session_id}")
-        await session.add_ice_candidate(candidate)
-
-    async def close_session(self, session_id: str) -> None:
-        session = self._sessions.pop(session_id, None)
-        if session is not None:
-            await session.close()
-
-    async def close(self) -> None:
-        session_ids = list(self._sessions)
-        for session_id in session_ids:
-            await self.close_session(session_id)
-        self._relay.close()
