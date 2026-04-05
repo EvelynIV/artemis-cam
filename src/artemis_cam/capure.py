@@ -31,8 +31,16 @@ def _load_gstreamer() -> Any:
                 "and the GStreamer runtime before starting capture."
             ) from exc
 
-        gi.require_version("Gst", "1.0")
-        from gi.repository import Gst
+        try:
+            gi.require_version("Gst", "1.0")
+            from gi.repository import Gst
+        except (ImportError, ValueError) as exc:
+            raise RuntimeError(
+                "GStreamer introspection data for Gst 1.0 is not available. "
+                "Install the system packages that provide the Gst typelib "
+                "before starting capture, for example gir1.2-gstreamer-1.0 "
+                "and gir1.2-gst-plugins-base-1.0 on Debian/Ubuntu."
+            ) from exc
 
         Gst.init(None)
         _GST_MODULE = Gst
