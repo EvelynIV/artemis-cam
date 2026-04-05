@@ -12,22 +12,14 @@ dependencies = [
     "aiortc (>=1.14.0,<2.0.0)",
     "grpcio (>=1.78.0,<2.0.0)",
     "protobuf (>=6.31.1,<7.0.0)",
-    "typer (>=0.16.1,<0.17.0)"
+    "typer (>=0.24.1)",
+    "opencv-python-headless (>=4.13.0.92,<5.0.0.0)",
+    "pygobject (>=3.56.2,<4.0.0)"
 ]
 
 [tool.poetry]
 packages = [{include = "artemis_cam", from = "src"}]
 
-[project.optional-dependencies]
-codegen = [
-    "grpcio-tools (>=1.78.0,<2.0.0)"
-]
-demo = [
-    "opencv-python (>=4.13.0,<5.0.0)"
-]
-gstreamer = [
-    "PyGObject (>=3.48.0)"
-]
 [[tool.poetry.source]]
 name = "tuna"
 url = "https://pypi.tuna.tsinghua.edu.cn/simple"

@@ -3,9 +3,9 @@
 import grpc
 import warnings
 
-from . import signaling_pb2 as signaling__pb2
+from artemis_cam.proto import signaling_pb2 as artemis__cam_dot_proto_dot_signaling__pb2
 
-GRPC_GENERATED_VERSION = '1.78.0'
+GRPC_GENERATED_VERSION = '1.80.0'
 GRPC_VERSION = grpc.__version__
 _version_not_supported = False
 
@@ -18,7 +18,7 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + ' but the generated code in signaling_pb2_grpc.py depends on'
+        + ' but the generated code in artemis_cam/proto/signaling_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
@@ -36,8 +36,8 @@ class SignalingServiceStub(object):
         """
         self.Signal = channel.stream_stream(
                 '/artemis_cam.signaling.v1.SignalingService/Signal',
-                request_serializer=signaling__pb2.SignalMessage.SerializeToString,
-                response_deserializer=signaling__pb2.SignalMessage.FromString,
+                request_serializer=artemis__cam_dot_proto_dot_signaling__pb2.SignalMessage.SerializeToString,
+                response_deserializer=artemis__cam_dot_proto_dot_signaling__pb2.SignalMessage.FromString,
                 _registered_method=True)
 
 
@@ -55,8 +55,8 @@ def add_SignalingServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'Signal': grpc.stream_stream_rpc_method_handler(
                     servicer.Signal,
-                    request_deserializer=signaling__pb2.SignalMessage.FromString,
-                    response_serializer=signaling__pb2.SignalMessage.SerializeToString,
+                    request_deserializer=artemis__cam_dot_proto_dot_signaling__pb2.SignalMessage.FromString,
+                    response_serializer=artemis__cam_dot_proto_dot_signaling__pb2.SignalMessage.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -84,8 +84,8 @@ class SignalingService(object):
             request_iterator,
             target,
             '/artemis_cam.signaling.v1.SignalingService/Signal',
-            signaling__pb2.SignalMessage.SerializeToString,
-            signaling__pb2.SignalMessage.FromString,
+            artemis__cam_dot_proto_dot_signaling__pb2.SignalMessage.SerializeToString,
+            artemis__cam_dot_proto_dot_signaling__pb2.SignalMessage.FromString,
             options,
             channel_credentials,
             insecure,
