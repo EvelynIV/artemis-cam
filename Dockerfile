@@ -1,18 +1,10 @@
-FROM python:3.10-slim-bullseye
+FROM registry.cn-hangzhou.aliyuncs.com/migo-dl/python:3.10.18-poetry-0-4-1-arm
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1 \
-    POETRY_VERSION=2.1.3 \
-    POETRY_NO_INTERACTION=1 \
-    POETRY_VIRTUALENVS_CREATE=false
-
+# 设置工作目录
 WORKDIR /app
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        build-essential \
-        gcc \
         gobject-introspection \
         libgirepository1.0-dev \
         libcairo2-dev \
@@ -30,16 +22,20 @@ RUN apt-get update \
         libgstreamer-plugins-base1.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install "poetry==${POETRY_VERSION}"
+# 拷贝必要的文件以安装依赖
+COPY pyproject.toml poetry.lock README.md ./
+RUN mkdir -p src/artemis_cam && \
+    touch src/artemis_cam/__init__.py && \
+    poetry install --no-root
 
-COPY pyproject.toml README.md ./
+# 拷贝源代码文件
+COPY . .
 
-RUN poetry install --no-root
+# 安装当前包
+RUN poetry install
 
-COPY src ./src
-
-RUN poetry install --only-root
-
+# 暴露 gRPC 服务端口
 EXPOSE 50051
 
-CMD ["python", "-m", "artemis_cam.commands.app", "serve-grpc"]
+# 默认入口
+CMD ["poetry", "run", "python", "-m", "artemis_cam.commands.app"]
