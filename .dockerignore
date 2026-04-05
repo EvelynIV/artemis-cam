@@ -1,0 +1,12 @@
+.git
+.gitignore
+.pytest_cache
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+build
+dist
+tmp-workspace
+tests
