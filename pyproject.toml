@@ -14,7 +14,7 @@ dependencies = [
     "protobuf (>=6.31.1,<7.0.0)",
     "typer (>=0.24.1)",
     "opencv-python-headless (>=4.13.0.92,<5.0.0.0)",
-    "pygobject (>=3.56.2,<4.0.0)"
+    "PyGObject (<3.50)"
 ]
 
 [tool.poetry]
