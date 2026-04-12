@@ -30,16 +30,6 @@ def serve_grpc(
         help="gRPC server listen port.",
         envvar="ARTEMIS_CAM_PORT",
     ),
-    width: int = typer.Option(
-        1280,
-        help="Capture width.",
-        envvar="ARTEMIS_CAM_WIDTH",
-    ),
-    height: int = typer.Option(
-        720,
-        help="Capture height.",
-        envvar="ARTEMIS_CAM_HEIGHT",
-    ),
     framerate: int = typer.Option(
         30,
         help="Capture frame rate.",
@@ -70,10 +60,6 @@ def serve_grpc(
 
     if port <= 0:
         raise typer.BadParameter("port must be > 0")
-    if width <= 0:
-        raise typer.BadParameter("width must be > 0")
-    if height <= 0:
-        raise typer.BadParameter("height must be > 0")
     if framerate <= 0:
         raise typer.BadParameter("framerate must be > 0")
     if bitrate <= 0:
@@ -82,8 +68,6 @@ def serve_grpc(
     logger.info("Starting gRPC camera server with the following configuration:")
     logger.info("  Host: %s", host)
     logger.info("  Port: %s", port)
-    logger.info("  Width: %s", width)
-    logger.info("  Height: %s", height)
     logger.info("  Framerate: %s", framerate)
     logger.info("  Bitrate: %s", bitrate)
     logger.info("  Source: %s", source_factory)
@@ -91,8 +75,6 @@ def serve_grpc(
 
     async def _run() -> None:
         capture = GStreamerCapture(
-            width=width,
-            height=height,
             framerate=framerate,
             bitrate=bitrate,
             source_factory=source_factory,

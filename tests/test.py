@@ -87,8 +87,6 @@ async def _handle_signaling(
 
 async def run_demo(args: argparse.Namespace) -> None:
     capture = GStreamerCapture(
-        width=args.width,
-        height=args.height,
         framerate=args.framerate,
         bitrate=args.bitrate,
     )
@@ -175,8 +173,6 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="artemis-cam WebRTC demo client")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=50051)
-    parser.add_argument("--width", type=int, default=1280)
-    parser.add_argument("--height", type=int, default=720)
     parser.add_argument("--framerate", type=int, default=30)
     parser.add_argument("--bitrate", type=int, default=2_000_000)
     return parser.parse_args()

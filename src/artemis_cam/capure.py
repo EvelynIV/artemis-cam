@@ -81,8 +81,6 @@ class GStreamerCapture:
     def __init__(
         self,
         *,
-        width: int = 1280,
-        height: int = 720,
         framerate: int = 30,
         bitrate: int = 2_000_000,
         source_factory: str = "autovideosrc",
@@ -91,8 +89,6 @@ class GStreamerCapture:
         output_queue_size: int = 30,
         state_change_timeout_seconds: float = 5.0,
     ) -> None:
-        self.width = width
-        self.height = height
         self.framerate = framerate
         self.bitrate = bitrate
         self.source_factory = source_factory
@@ -219,7 +215,6 @@ class GStreamerCapture:
 
         source = self._make_element(self.source_factory, "camera-source")
         videoconvert = self._make_element("videoconvert", "video-convert")
-        videoscale = self._make_element("videoscale", "video-scale")
         videorate = self._make_element("videorate", "video-rate")
         capsfilter = self._make_element("capsfilter", "capture-caps")
         encoder = self._make_element(encoder_factory, "h264-encoder")
@@ -235,7 +230,6 @@ class GStreamerCapture:
         for element in (
             source,
             videoconvert,
-            videoscale,
             videorate,
             capsfilter,
             encoder,
@@ -246,10 +240,8 @@ class GStreamerCapture:
 
         if not source.link(videoconvert):
             raise RuntimeError("Failed to link source -> videoconvert.")
-        if not videoconvert.link(videoscale):
-            raise RuntimeError("Failed to link videoconvert -> videoscale.")
-        if not videoscale.link(videorate):
-            raise RuntimeError("Failed to link videoscale -> videorate.")
+        if not videoconvert.link(videorate):
+            raise RuntimeError("Failed to link videoconvert -> videorate.")
         if not videorate.link(capsfilter):
             raise RuntimeError("Failed to link videorate -> capsfilter.")
         if not capsfilter.link(encoder):
@@ -394,8 +386,7 @@ class GStreamerCapture:
     def _configure_caps(self, capsfilter: Any) -> None:
         caps = self._gst.Caps.from_string(
             "video/x-raw,"
-            f"format=I420,width={self.width},height={self.height},"
-            f"framerate={self.framerate}/1"
+            f"format=I420,framerate={self.framerate}/1"
         )
         capsfilter.set_property("caps", caps)
 
